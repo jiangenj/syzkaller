@@ -68,6 +68,11 @@ func main() {
 			usage()
 		}
 		merge(args[1], args[2:], target)
+	case "print":
+		if len(args) != 2 {
+			usage()
+		}
+		print(args[1])
 	default:
 		usage()
 	}
@@ -91,6 +96,8 @@ offered:
     syz-db merge dst-corpus.db add-corpus.db* add-prog*
   running a deserialization benchmark and printing corpus stats:
     syz-db bench corpus.db
+  print corpus db:
+    syz-db print corpus.db
 `)
 	os.Exit(1)
 }
@@ -220,4 +227,20 @@ func bench(target *prog.Target, file string) {
 	sort.Ints(lens)
 	fmt.Printf("program size: min=%v avg=%v max=%v 10%%=%v 50%%=%v 90%%=%v\n",
 		lens[0], sum/n, lens[n-1], lens[n/10], lens[n/2], lens[n*9/10])
+}
+
+func print(file string) {
+	db, err := db.Open(file, false)
+	if err != nil {
+		tool.Failf("failed to open database: %v", err)
+	}
+	var keys []string
+	for key := range db.Records {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		rec := db.Records[key]
+		fmt.Printf("%v\n%v\n", key, string(rec.Val))
+	}
 }
