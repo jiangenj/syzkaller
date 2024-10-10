@@ -4,6 +4,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -73,6 +75,11 @@ func main() {
 			usage()
 		}
 		print(args[1])
+	case "rm":
+		if len(args) != 3 {
+			usage()
+		}
+		rm(args[1], args[2])
 	default:
 		usage()
 	}
@@ -98,6 +105,8 @@ offered:
     syz-db bench corpus.db
   print corpus db:
     syz-db print corpus.db
+  remove a syscall from db
+    syz-db rm corpus.db syscall_name
 `)
 	os.Exit(1)
 }
@@ -243,4 +252,39 @@ func print(file string) {
 		rec := db.Records[key]
 		fmt.Printf("%v\n%v\n", key, string(rec.Val))
 	}
+}
+
+func rm(file, syscall string) {
+	db, err := db.Open(file, false)
+	if err != nil {
+		tool.Failf("failed to open database: %v", err)
+	}
+	for key, rec := range db.Records {
+		result := removeLinesContaining(rec.Val, syscall)
+		if len(result) > 0 {
+			db.Save(key, result, rec.Seq)
+		} else {
+			delete(db.Records, key)
+		}
+	}
+	if err := db.Flush(); err != nil {
+		tool.Failf("failed to flush db")
+	}
+}
+
+func removeLinesContaining(input []byte, target string) []byte {
+	var output bytes.Buffer
+	reader := bufio.NewReader(bytes.NewReader(input))
+
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		if !bytes.Contains([]byte(line), []byte(target)) {
+			output.WriteString(line)
+		}
+	}
+
+	return output.Bytes()
 }
