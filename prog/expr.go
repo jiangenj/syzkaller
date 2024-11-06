@@ -30,6 +30,12 @@ func (bo *BinaryExpression) Evaluate(finder ArgFinder) (uint64, bool) {
 		return 0, true
 	case OperatorBinaryAnd:
 		return left & right, true
+	case OperatorOr:
+		i, ok := bo.Left.Evaluate(finder)
+		if !ok {
+			return bo.Right.Evaluate(finder)
+		}
+		return i, ok
 	}
 	panic(fmt.Sprintf("unknown operator %q", bo.Operator))
 }
