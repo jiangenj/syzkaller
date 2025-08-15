@@ -120,6 +120,10 @@ func (target *Target) calcStaticPriorities(enabled map[*Syscall]bool) [][]int32 
 			pp[id] = max * 3 / 4
 		}
 	}
+	// Add manual priority defined in the target description.
+	for i := range prios {
+		prios[i][i] += int32(target.Syscalls[i].Attrs.Priority)
+	}
 	normalizePrios(prios, len(enabled))
 	return prios
 }

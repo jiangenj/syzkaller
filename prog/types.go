@@ -48,6 +48,7 @@ type SyscallAttrs struct {
 	Automatic       bool
 	AutomaticHelper bool
 	Fsck            string
+	Priority        uint64
 }
 
 // MaxArgs is maximum number of syscall arguments.

@@ -23,6 +23,7 @@ foo_15() r0 (disabled, timeout[C1], prog_timeout[C2])
 foo_16(a int32[int_flags])
 foo_17(a int8[C1])
 foo_18(a int64[100])
+foo_19(a int8) (priority[10000])
 
 resource r0[intptr]
 
