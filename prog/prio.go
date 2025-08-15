@@ -54,6 +54,9 @@ func (target *Target) CalculatePriorities(corpus []*Prog, enabled map[*Syscall]b
 			}
 		}
 	}
+	for i := range static {
+		static[i][i] += int32(target.Syscalls[i].Attrs.Priority)
+	}
 	return static, enabled
 }
 
